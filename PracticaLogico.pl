@@ -1,50 +1,45 @@
-atiende(dodain,lunes,9,15).
-atiende(dodain,miercoles,9,15).
-atiende(dodain,viernes,9,15).
-atiende(lucas,martes,10,20).
-atiende(juanC,sabado,18,22).
-atiende(juanC,domingo,18,22).
-atiende(juanFdS,jueves,10,20).
-atiende(juanFdS,viernes,12,20).
-atiende(leoC,lunes,14,18).
-atiende(leoC,miercoles,14,18).
-atiende(martu,miercoles,23,24).
+mago(harry,mestiza,[coraje,orgullo,inteligencia,amistad]).
+mago(draco,pura,[inteligencia,orgullo]).
+mago(hermione,impura,[inteligencia,orgullo,responsabilidad]).
 
-atiende(vale,Dia,HoraInicial,HoraFinal):-atiende(dodain,Dia,HoraInicial,HoraFinal).
-atiende(vale,Dia,HoraInicial,HoraFinal):-atiende(juanC,Dia,HoraInicial,HoraFinal).
+odiariaEstarEn(harry,slytherin).
+odiariaEstarEn(draco,hufflepuff).
 
-quienAtiende(Persona,Dia,Hora):-
-    atiende(Persona,Dia,HoraInicial,HoraFinal),
-    Hora >= HoraInicial, 
-    Hora =< HoraFinal.
+casa(Casa):-importanteParaCasa(Casa,_).
 
-estaForeverAlone(Persona,Dia,Hora):-
-    quienAtiende(Persona,Dia,Hora),
-    not((quienAtiende(Otre, Dia, Hora), Persona \= Otre)).
+importanteParaCasa(gryffindor,[coraje]).
+importanteParaCasa(slytherin,[orgullo,inteligencia]).
+importanteParaCasa(hufflepuff,[amistad]).
+importanteParaCasa(ravenclaw,[inteligencia,responsabilidad]).
 
-posibilidadesAtencion(Dia, Personas):-
-  findall(Quien, atiende(Quien, Dia, _, _), Quienes),
-  combinar(Quienes, Personas).
+permiteEntrarAMago(Mago,slytherin):-
+    mago(Mago,Sangre,_),
+    Sangre \= impura.
 
-combinar([], []).
-combinar([Posible|Posibles], [Posible|Personas]):-combinar(Posibles, Personas).
-combinar([_|Posibles], Personas):-combinar(Posibles, Personas).
+permiteEntrarAMago(Mago,Casa):-
+    mago(Mago,_,_),
+    Casa \= slytherin.
 
-ventas(dodain, lunes, 10, 8, [golosinas(1200), cigarrillos(jockey), golosinas(50)]).
-ventas(dodain, miercoles, 12, 8, [bebidas(true, 8), bebida(false, 1)]).
-ventas(martu, miercoles, 12, 8, [golosinas(1000), cigarrillos(chesterfield, colorado, parisiennes)]).
-ventas(lucas, martes, 11, 8, [golosinas(600)]).
-ventas(lucas, martes, 18, 8, [bebidas(false, 2), cigarrillos(derby)]).
+caracterApropiadoParaLaCasa(Mago,Casa):-
+    mago(Mago,_,Caracteristicas),
+    importanteParaCasa(Casa,CaracterBuscado),
+    forall(member(Caracteristica, CaracterBuscado),member(Caracteristica,Caracteristicas)).
 
-esSuertudo(Vendedor):-
-    vendedor(Vendedor),
-    forall(ventas(Vendedor,_,_,_,[PrimeraVenta|_]),diaDeVentaSuertudo(PrimeraVenta)).
+puedeQuedarEn(hermione,gryffindor).
+puedeQuedarEn(Mago,Casa):-
+    caracterApropiadoParaLaCasa(Mago,Casa),
+    permiteEntrarAMago(Mago,Casa),
+    not(odiariaEstarEn(Mago,Casa)).
 
-vendedor(Persona):-distinct(Persona, ventas(Persona, _, _, _, _)).
+cadenaDeAmistades(Magos):-
+    forall((member(Mago,Magos),mago(Mago,_,Caracteristicas)),member(amistad,Caracteristicas)),
+    puedenRelacionarse(Magos).
 
-diaDeVentaSuertudo(golosinas(PrecioDeVenta)):- PrecioDeVenta > 100.
-diaDeVentaSuertudo(cigarrillos(Marcas)):-
-    length(Marcas,CantidadDeMarcas),
-    CantidadDeMarcas > 2.
-diaDeVentaSuertudo(bebidas(true,_)).
-diaDeVentaSuertudo(bebidas(_,CantidadDeBebidas)):- CantidadDeBebidas > 5.
+puedenRelacionarse([_]).
+puedenRelacionarse([Mago1,Mago2|OtrosMagos]):-
+    puedenQuedarJuntos(Mago1,Mago2),
+    puedenRelacionarse([Mago2|OtrosMagos]).
+
+puedenQuedarJuntos(Mago1,Mago2):-
+    puedeQuedarEn(Mago1,Casa),
+    puedeQuedarEn(Mago2,Casa).
