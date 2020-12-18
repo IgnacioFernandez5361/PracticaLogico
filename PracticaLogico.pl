@@ -23,11 +23,28 @@ estaForeverAlone(Persona,Dia,Hora):-
     not((quienAtiende(Otre, Dia, Hora), Persona \= Otre)).
 
 posibilidadesAtencion(Dia, Personas):-
-    findall(Quien, atiende(Quien, Dia, _, _), Quienes),
-    combinar(Quienes, Personas).
-  
-  combinar([], []).
-  combinar([Posible|Posibles], [Posible|Personas]):-combinar(Posibles, Personas).
-  combinar([_|Posibles], Personas):-combinar(Posibles, Personas).
+  findall(Quien, atiende(Quien, Dia, _, _), Quienes),
+  combinar(Quienes, Personas).
 
+combinar([], []).
+combinar([Posible|Posibles], [Posible|Personas]):-combinar(Posibles, Personas).
+combinar([_|Posibles], Personas):-combinar(Posibles, Personas).
 
+ventas(dodain, lunes, 10, 8, [golosinas(1200), cigarrillos(jockey), golosinas(50)]).
+ventas(dodain, miercoles, 12, 8, [bebidas(true, 8), bebida(false, 1)]).
+ventas(martu, miercoles, 12, 8, [golosinas(1000), cigarrillos(chesterfield, colorado, parisiennes)]).
+ventas(lucas, martes, 11, 8, [golosinas(600)]).
+ventas(lucas, martes, 18, 8, [bebidas(false, 2), cigarrillos(derby)]).
+
+esSuertudo(Vendedor):-
+    vendedor(Vendedor),
+    forall(ventas(Vendedor,_,_,_,[PrimeraVenta|_]),diaDeVentaSuertudo(PrimeraVenta)).
+
+vendedor(Persona):-distinct(Persona, ventas(Persona, _, _, _, _)).
+
+diaDeVentaSuertudo(golosinas(PrecioDeVenta)):- PrecioDeVenta > 100.
+diaDeVentaSuertudo(cigarrillos(Marcas)):-
+    length(Marcas,CantidadDeMarcas),
+    CantidadDeMarcas > 2.
+diaDeVentaSuertudo(bebidas(true,_)).
+diaDeVentaSuertudo(bebidas(_,CantidadDeBebidas)):- CantidadDeBebidas > 5.
